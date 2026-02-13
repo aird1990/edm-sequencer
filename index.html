@@ -15,6 +15,8 @@
             --edm-green: #39ff14;
             --bg-dark: #050510;
             --panel-bg: rgba(20, 20, 40, 0.8);
+            --grid-bg: #0a0a1a;
+            --step-inactive: #151525;
         }
 
         body {
@@ -29,15 +31,17 @@
             padding: 20px;
             /* Laser Background */
             background-image: 
-                linear-gradient(0deg, transparent 24%, rgba(0, 242, 255, .1) 25%, rgba(0, 242, 255, .1) 26%, transparent 27%, transparent 74%, rgba(0, 242, 255, .1) 75%, rgba(0, 242, 255, .1) 76%, transparent 77%, transparent),
-                linear-gradient(90deg, transparent 24%, rgba(189, 0, 255, .1) 25%, rgba(189, 0, 255, .1) 26%, transparent 27%, transparent 74%, rgba(189, 0, 255, .1) 75%, rgba(189, 0, 255, .1) 76%, transparent 77%, transparent);
+                linear-gradient(0deg, transparent 24%, rgba(0, 242, 255, .05) 25%, rgba(0, 242, 255, .05) 26%, transparent 27%, transparent 74%, rgba(0, 242, 255, .05) 75%, rgba(0, 242, 255, .05) 76%, transparent 77%, transparent),
+                linear-gradient(90deg, transparent 24%, rgba(189, 0, 255, .05) 25%, rgba(189, 0, 255, .05) 26%, transparent 27%, transparent 74%, rgba(189, 0, 255, .05) 75%, rgba(189, 0, 255, .05) 76%, transparent 77%, transparent);
             background-size: 50px 50px;
             box-sizing: border-box;
         }
 
-        *, *:before, *:after {
-            box-sizing: inherit;
-        }
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { height: 8px; width: 8px; }
+        ::-webkit-scrollbar-track { background: #050510; }
+        ::-webkit-scrollbar-thumb { background: var(--edm-blue); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--edm-purple); }
 
         h1 {
             font-family: 'Russo One', sans-serif;
@@ -51,6 +55,8 @@
                 0 0 20px var(--edm-purple),
                 0 0 40px var(--edm-pink);
             animation: pulse-glow 2s infinite alternate;
+            text-align: center;
+            line-height: 1.2;
         }
 
         @keyframes pulse-glow {
@@ -66,8 +72,8 @@
             box-shadow: 
                 0 0 30px rgba(0, 242, 255, 0.3),
                 inset 0 0 50px rgba(0, 0, 0, 0.8);
-            max-width: 100%;
-            overflow-x: auto;
+            width: 100%;
+            max-width: 1000px;
             backdrop-filter: blur(5px);
             position: relative;
         }
@@ -86,24 +92,19 @@
             border-radius: 4px;
         }
 
-        .btn-group {
-            display: flex;
-            gap: 10px;
-        }
-
         .btn {
             background: transparent;
             border: 2px solid var(--edm-blue);
             color: var(--edm-blue);
-            padding: 8px 24px;
+            padding: 8px 20px;
             cursor: pointer;
             font-family: 'Russo One', sans-serif;
             text-transform: uppercase;
             border-radius: 2px;
             transition: all 0.2s;
-            font-size: 0.9rem;
+            font-size: 0.85rem;
             letter-spacing: 1px;
-            touch-action: manipulation;
+            white-space: nowrap;
         }
 
         .btn:hover {
@@ -142,53 +143,48 @@
             background: #000;
             color: var(--edm-green);
             border: 1px solid var(--edm-green);
-            padding: 10px;
+            padding: 8px;
             font-family: 'Russo One', sans-serif;
             border-radius: 2px;
-            min-width: 220px;
-            width: 100%;
             outline: none;
             cursor: pointer;
-            touch-action: manipulation;
-        }
-
-        .slider-group {
-            display: flex;
-            flex-direction: column;
-            align-items: flex-end;
-            gap: 2px;
-            width: 100%;
-        }
-
-        .slider-label {
-            font-size: 1.2em;
-            color: #aaa;
-            font-weight: 600;
-            letter-spacing: 1px;
         }
 
         input[type="range"] {
             accent-color: var(--edm-purple);
-            width: 140px;
             height: 6px;
             background: #333;
             border-radius: 3px;
-            outline: none;
-            touch-action: manipulation;
-            max-width: 100%;
+            cursor: pointer;
         }
 
-        /* Grid */
-        .grid-container {
+        /* Grid Layout - Responsive Scrollable */
+        .grid-wrapper {
+            background: var(--grid-bg);
+            border: 1px solid #333;
+            padding: 10px;
+            border-radius: 4px;
+            margin-top: 10px;
+        }
+
+        .grid-scroll-area {
+            overflow-x: auto;
+            padding-bottom: 10px;
+        }
+
+        .grid-fixed-width {
+            min-width: 680px; /* Prevent squashing */
+        }
+
+        .grid-row {
             display: grid;
             grid-template-columns: 80px repeat(16, 1fr);
             gap: 4px;
             margin-bottom: 8px;
+            align-items: center;
         }
 
         .track-label {
-            display: flex;
-            align-items: center;
             font-weight: 700;
             color: #fff;
             font-size: 1.1em;
@@ -199,17 +195,20 @@
 
         .step {
             aspect-ratio: 1;
-            background: #111;
+            background: var(--step-inactive);
             cursor: pointer;
             border: 1px solid #333;
             transition: all 0.1s;
             border-radius: 2px;
-            touch-action: manipulation;
+            box-sizing: border-box;
         }
 
-        .step:nth-child(4n + 2) { 
-            margin-right: 8px; 
-            border-right-color: #555;
+        /* Beat Grouping - Using borders */
+        .step:nth-child(4n + 5) {
+            border-right: 6px solid var(--grid-bg);
+        }
+        .step:last-child {
+            border-right: 1px solid #333;
         }
 
         .step:hover {
@@ -223,56 +222,41 @@
         }
         
         /* EDM Colors */
-        .row-kick .step.active { 
-            background: var(--edm-pink); 
-            box-shadow: 0 0 15px var(--edm-pink); 
-        }
-        .row-clap .step.active { 
-            background: var(--edm-blue); 
-            box-shadow: 0 0 15px var(--edm-blue); 
-        }
-        .row-hihat .step.active { 
-            background: var(--edm-green); 
-            box-shadow: 0 0 15px var(--edm-green); 
-        }
+        .row-kick .step.active { background: var(--edm-pink); box-shadow: 0 0 15px var(--edm-pink); }
+        .row-clap .step.active { background: var(--edm-blue); box-shadow: 0 0 15px var(--edm-blue); }
+        .row-hihat .step.active { background: var(--edm-green); box-shadow: 0 0 15px var(--edm-green); }
         /* Lead Synth Track */
-        .row-lead .step.active { 
-            background: var(--edm-purple); 
-            box-shadow: 0 0 15px var(--edm-purple); 
-        }
+        .row-lead .step.active { background: var(--edm-purple); box-shadow: 0 0 15px var(--edm-purple); }
 
         .step.playing {
             transform: scale(1.1);
             filter: brightness(1.5);
             z-index: 10;
-            border-color: #fff;
+            border-color: #fff !important;
         }
 
-        .indicator-row {
+        .indicator {
             height: 6px;
-            margin-bottom: 10px;
-            grid-template-columns: 80px repeat(16, 1fr);
-            gap: 4px;
-            display: grid;
+            background: #222;
+            border-radius: 2px;
+            margin-bottom: 4px;
+            box-sizing: border-box;
         }
         
-        .indicator {
-            width: 100%;
-            height: 100%;
-            background: #222;
+        .indicator:nth-child(4n + 5) {
+            border-right: 6px solid var(--grid-bg);
         }
+
         .indicator.active {
             background: #fff;
             box-shadow: 0 0 15px #fff;
         }
 
-        .value-display {
+        .bpm-display {
             font-size: 1.3em;
             color: var(--edm-blue);
             font-weight: bold;
             font-family: 'Teko', sans-serif;
-            min-width: 40px;
-            text-align: right;
         }
         
         .description {
@@ -280,110 +264,97 @@
             font-size: 1.2em;
             color: #888;
             text-align: center;
-            height: 30px;
             text-transform: uppercase;
             letter-spacing: 2px;
         }
 
-        /* Responsive Design */
-        @media (max-width: 768px) {
+        @media (max-width: 640px) {
             h1 { font-size: 2.5rem; }
-            .controls { flex-direction: column; align-items: stretch; padding: 15px; gap: 15px; }
-            .flex.gap-8 { flex-direction: column; gap: 15px; width: 100%; }
-            .slider-group { width: 100%; align-items: flex-start; }
-            .btn-group { flex-wrap: wrap; justify-content: center; }
-            .btn { padding: 10px 12px; font-size: 0.8rem; flex: 1; min-width: 45%; }
             .sequencer-container { padding: 15px; }
-            .grid-container, .indicator-row { grid-template-columns: 50px repeat(16, 1fr); gap: 2px; }
-            .track-label { font-size: 0.7em; letter-spacing: 0; }
-            .step:nth-child(4n + 2) { margin-right: 4px; border-right-color: #555; }
-        }
-
-        @media (max-width: 480px) {
-            body { padding: 10px; }
-            h1 { font-size: 2rem; }
-            .grid-container, .indicator-row { grid-template-columns: 40px repeat(16, 1fr); }
-            .track-label { font-size: 0.6em; line-height: 1.1; word-wrap: break-word; }
+            .btn { padding: 8px 12px; font-size: 0.75rem; }
+            .grid-row { grid-template-columns: 60px repeat(16, 1fr); }
+            .track-label { font-size: 0.9em; }
         }
     </style>
 </head>
 <body>
 
-    <h1>MAIN STAGE</h1>
+    <h1>EDM Drum Sequencer</h1>
 
     <div class="sequencer-container">
         <!-- Controls -->
-        <div class="controls">
-            <div class="btn-group">
+        <div class="flex flex-wrap items-center justify-between gap-4 mb-6">
+            <div class="flex gap-2 flex-wrap justify-center sm:justify-start">
                 <button id="playBtn" class="btn">▶ PLAY</button>
                 <button id="stopBtn" class="btn">■ STOP</button>
                 <button id="clearBtn" class="btn btn-danger">CLEAR</button>
                 <button id="exportBtn" class="btn btn-purple">MIDI ↓</button>
             </div>
             
-            <div class="flex gap-8">
-                <div class="slider-group">
-                    <div class="slider-label">BPM</div>
-                    <div class="flex items-center gap-2">
-                        <input type="range" id="bpmSlider" min="120" max="140" value="128">
-                        <span id="bpmVal" class="value-display">128</span>
-                    </div>
+            <div class="flex flex-wrap gap-6 items-center flex-grow justify-center sm:justify-end">
+                <div class="flex items-center gap-2">
+                    <span class="text-xs text-gray-400 font-bold uppercase font-russo">BPM</span>
+                    <input type="range" id="bpmSlider" min="120" max="140" value="128" class="w-24 sm:w-32">
+                    <span id="bpmVal" class="bpm-display w-8 text-right">128</span>
                 </div>
-
-                <div class="slider-group">
-                    <div class="slider-label">LEVEL</div>
-                    <div class="flex items-center gap-2">
-                        <input type="range" id="volSlider" min="0" max="100" value="85">
-                        <span id="volVal" class="value-display">85%</span>
-                    </div>
+                <div class="flex items-center gap-2">
+                    <span class="text-xs text-gray-400 font-bold uppercase font-russo">Vol</span>
+                    <input type="range" id="volSlider" min="0" max="100" value="85" class="w-20 sm:w-24">
+                    <span id="volVal" class="text-gray-400 text-xs w-8 text-right font-russo">85%</span>
                 </div>
             </div>
 
-            <div>
-                <select id="presetSelect">
-                    <option value="" disabled selected>DROP SELECTOR...</option>
-                    <!-- Options populated by JS -->
-                </select>
-            </div>
+            <select id="presetSelect" class="w-full sm:w-auto text-sm">
+                <option value="" disabled selected>DROP SELECTOR...</option>
+            </select>
         </div>
 
-        <div id="patternName" class="text-center text-blue-400 font-bold mb-4 h-6 uppercase tracking-widest text-sm">MANUAL MODE</div>
+        <div class="text-center mb-4">
+            <div id="patternName" class="text-blue-400 font-bold text-sm uppercase tracking-widest font-[Russo One]">MANUAL MODE</div>
+            <div id="descDisplay" class="text-gray-500 text-xs mt-1 h-4 font-[Teko] tracking-wider">Put your hands up.</div>
+        </div>
 
-        <!-- Sequencer Grid -->
+        <!-- Sequencer Grid (Scrollable) -->
         <div class="grid-wrapper">
-            <!-- Indicators -->
-            <div class="indicator-row" id="indicators">
-                 <div></div> <!-- Spacer -->
-                <!-- Indicators injected here -->
-            </div>
+            <div class="grid-scroll-area">
+                <div class="grid-fixed-width">
+                    <!-- Indicators -->
+                    <div class="grid-row mb-2" id="indicators-row">
+                        <div></div> <!-- Spacer -->
+                        <!-- Indicators injected here -->
+                    </div>
 
-            <!-- Lead Synth -->
-            <div class="grid-container row-lead" id="row-lead">
-                <div class="track-label">Lead Synth</div>
-                <!-- Steps injected here -->
-            </div>
+                    <!-- Lead Synth -->
+                    <div class="grid-row row-lead" id="row-lead">
+                        <div class="track-label">Lead</div>
+                        <!-- Steps injected here -->
+                    </div>
 
-            <!-- Closed Hi-Hat -->
-            <div class="grid-container row-hihat" id="row-hihat">
-                <div class="track-label">Hat</div>
-                <!-- Steps injected here -->
-            </div>
+                    <!-- Closed Hi-Hat -->
+                    <div class="grid-row row-hihat" id="row-hihat">
+                        <div class="track-label">Hat</div>
+                        <!-- Steps injected here -->
+                    </div>
 
-            <!-- Clap/Snare -->
-            <div class="grid-container row-clap" id="row-clap">
-                <div class="track-label">Clap</div>
-                <!-- Steps injected here -->
-            </div>
+                    <!-- Clap/Snare -->
+                    <div class="grid-row row-clap" id="row-clap">
+                        <div class="track-label">Clap</div>
+                        <!-- Steps injected here -->
+                    </div>
 
-            <!-- Kick -->
-            <div class="grid-container row-kick" id="row-kick">
-                <div class="track-label">Big Kick</div>
-                <!-- Steps injected here -->
+                    <!-- Kick -->
+                    <div class="grid-row row-kick" id="row-kick">
+                        <div class="track-label">Kick</div>
+                        <!-- Steps injected here -->
+                    </div>
+                </div>
             </div>
         </div>
     </div>
     
-    <div class="description" id="descDisplay">Put your hands up.</div>
+    <div class="description">
+        Big Room / Electro / Festival
+    </div>
 
     <script>
         // --- Audio Context & Synthesis ---
@@ -736,26 +707,23 @@
         // --- UI Generation ---
         function createGrid() {
             const rows = ['lead', 'hihat', 'clap', 'kick'];
-            const indicators = document.getElementById('indicators');
+            const indRow = document.getElementById('indicators-row');
 
-            // Create Indicators
+            // Indicators
             for(let i=0; i<STEPS; i++) {
                 const div = document.createElement('div');
                 div.className = 'indicator';
                 div.id = `ind-${i}`;
-                indicators.appendChild(div);
+                indRow.appendChild(div);
             }
 
-            // Create Steps
+            // Steps
             rows.forEach((row, rowIndex) => {
                 const container = document.getElementById(`row-${row}`);
                 for (let i = 0; i < STEPS; i++) {
                     const btn = document.createElement('div');
                     btn.className = 'step';
                     btn.id = `${row}-${i}`;
-                    btn.dataset.row = rowIndex;
-                    btn.dataset.step = i;
-
                     btn.addEventListener('click', () => toggleStep(rowIndex, i));
                     container.appendChild(btn);
                 }
@@ -773,11 +741,7 @@
             rows.forEach((row, rowIndex) => {
                 for (let i = 0; i < STEPS; i++) {
                     const el = document.getElementById(`${row}-${i}`);
-                    if (gridState[rowIndex][i]) {
-                        el.classList.add('active');
-                    } else {
-                        el.classList.remove('active');
-                    }
+                    el.classList.toggle('active', gridState[rowIndex][i]);
                 }
             });
         }
@@ -786,42 +750,30 @@
         function nextNote() {
             const secondsPerBeat = 60.0 / bpm;
             const secondsPerStep = secondsPerBeat / 4; 
-
             nextNoteTime += secondsPerStep;
-            
-            currentStep++;
-            if (currentStep === STEPS) {
-                currentStep = 0;
-            }
+            currentStep = (currentStep + 1) % STEPS;
         }
 
         function scheduleNote(stepNumber, time) {
-            // Draw UI
             setTimeout(() => {
-                drawPlayhead(stepNumber);
+                document.querySelectorAll('.indicator').forEach(el => el.classList.remove('active'));
+                document.querySelectorAll('.step').forEach(el => el.classList.remove('playing'));
+                
+                const ind = document.getElementById(`ind-${stepNumber}`);
+                if(ind) ind.classList.add('active');
+
+                const rows = ['lead', 'hihat', 'clap', 'kick'];
+                rows.forEach((row, rIdx) => {
+                    if (gridState[rIdx][stepNumber]) {
+                        document.getElementById(`${row}-${stepNumber}`).classList.add('playing');
+                    }
+                });
             }, (time - audioCtx.currentTime) * 1000);
 
-            // Play Sounds (0=Lead, 1=Hat, 2=Clap, 3=Kick)
             if (gridState[0][stepNumber]) playLead(time);
             if (gridState[1][stepNumber]) playHiHat(time);
             if (gridState[2][stepNumber]) playClap(time);
             if (gridState[3][stepNumber]) playKick(time);
-        }
-
-        function drawPlayhead(stepNumber) {
-            document.querySelectorAll('.indicator').forEach(el => el.classList.remove('active'));
-            document.querySelectorAll('.step').forEach(el => el.classList.remove('playing'));
-
-            const ind = document.getElementById(`ind-${stepNumber}`);
-            if(ind) ind.classList.add('active');
-
-            const rows = ['lead', 'hihat', 'clap', 'kick'];
-            rows.forEach(row => {
-                const el = document.getElementById(`${row}-${stepNumber}`);
-                if (el.classList.contains('active')) {
-                    el.classList.add('playing');
-                }
-            });
         }
 
         function scheduler() {
@@ -834,12 +786,10 @@
 
         function play() {
             if (isPlaying) return;
-            
             initAudio();
             isPlaying = true;
             currentStep = 0;
             nextNoteTime = audioCtx.currentTime;
-            
             scheduler();
             document.getElementById('playBtn').classList.add('active');
             document.getElementById('stopBtn').classList.remove('active');
@@ -850,7 +800,6 @@
             clearTimeout(timerID);
             document.getElementById('playBtn').classList.remove('active');
             document.getElementById('stopBtn').classList.add('active');
-            
             setTimeout(() => {
                  document.querySelectorAll('.indicator').forEach(el => el.classList.remove('active'));
                  document.querySelectorAll('.step').forEach(el => el.classList.remove('playing'));
@@ -859,78 +808,53 @@
         }
 
         function clearGrid() {
-            gridState = [
-                new Array(STEPS).fill(false),
-                new Array(STEPS).fill(false),
-                new Array(STEPS).fill(false),
-                new Array(STEPS).fill(false)
-            ];
+            gridState = Array(4).fill().map(() => Array(STEPS).fill(false));
             updateGridUI();
-            document.getElementById('patternName').innerText = "STAGE CLEARED";
+            document.getElementById('patternName').innerText = "SYSTEM CLEARED";
+            document.getElementById('descDisplay').innerText = "Select Drop.";
             document.getElementById('presetSelect').value = "";
         }
 
-        // --- Presets Logic ---
         function loadPreset(index) {
             clearGrid();
             const p = presets[index];
-            
-            p.l.forEach(step => gridState[0][step] = true);
-            p.h.forEach(step => gridState[1][step] = true);
-            p.c.forEach(step => gridState[2][step] = true);
-            p.k.forEach(step => gridState[3][step] = true);
-
+            p.l.forEach(s => gridState[0][s] = true);
+            p.h.forEach(s => gridState[1][s] = true);
+            p.c.forEach(s => gridState[2][s] = true);
+            p.k.forEach(s => gridState[3][s] = true);
             updateGridUI();
             document.getElementById('patternName').innerText = p.name;
             document.getElementById('descDisplay').innerText = p.desc;
         }
 
-        function initPresets() {
-            const select = document.getElementById('presetSelect');
-            presets.forEach((p, index) => {
-                const opt = document.createElement('option');
-                opt.value = index;
-                opt.innerText = p.name;
-                select.appendChild(opt);
-            });
-
-            select.addEventListener('change', (e) => {
-                loadPreset(e.target.value);
-            });
-        }
-
-        // --- Setup ---
         window.addEventListener('load', () => {
             createGrid();
-            initPresets();
-            loadPreset(0); 
+            const sel = document.getElementById('presetSelect');
+            presets.forEach((p, i) => {
+                const opt = document.createElement('option');
+                opt.value = i; opt.innerText = p.name; sel.appendChild(opt);
+            });
+            sel.addEventListener('change', (e) => loadPreset(e.target.value));
 
             document.getElementById('playBtn').addEventListener('click', play);
             document.getElementById('stopBtn').addEventListener('click', stop);
             document.getElementById('clearBtn').addEventListener('click', clearGrid);
             document.getElementById('exportBtn').addEventListener('click', exportMIDI);
             
-            // BPM Control
-            const bpmSlider = document.getElementById('bpmSlider');
-            const bpmVal = document.getElementById('bpmVal');
-            bpmSlider.addEventListener('input', (e) => {
+            document.getElementById('bpmSlider').addEventListener('input', (e) => {
                 bpm = parseInt(e.target.value);
-                bpmVal.innerText = bpm;
+                document.getElementById('bpmVal').innerText = bpm;
             });
 
-            // Volume Control
-            const volSlider = document.getElementById('volSlider');
-            const volVal = document.getElementById('volVal');
-            volSlider.addEventListener('input', (e) => {
+            document.getElementById('volSlider').addEventListener('input', (e) => {
                 const val = parseInt(e.target.value);
+                document.getElementById('volVal').innerText = val + "%";
                 masterVolume = val / 100;
-                volVal.innerText = val + "%";
-                if(masterGainNode) {
-                    masterGainNode.gain.setValueAtTime(masterVolume, audioCtx.currentTime);
-                }
+                if(masterGainNode) masterGainNode.gain.setValueAtTime(masterVolume, audioCtx.currentTime);
             });
+            
+            loadPreset(0);
         });
-
     </script>
 </body>
 </html>
