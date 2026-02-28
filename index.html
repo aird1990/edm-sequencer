@@ -267,6 +267,26 @@
             letter-spacing: 2px;
         }
 
+        /* Modal Styles */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.85);
+            display: none; justify-content: center; align-items: center;
+            z-index: 50; backdrop-filter: blur(2px);
+        }
+        .modal-overlay.active { display: flex; }
+        .modal-content {
+            background: var(--panel-bg); border: 2px solid var(--edm-blue);
+            border-radius: 4px; padding: 24px; width: 90%; max-width: 380px;
+            box-shadow: 0 0 20px rgba(0, 242, 255, 0.15);
+        }
+        .modal-input {
+            background: #000; border: 1px solid #444; color: var(--edm-green);
+            padding: 6px 10px; border-radius: 2px; width: 80px;
+            font-family: 'Russo One', sans-serif; text-align: center; text-transform: uppercase;
+        }
+        .modal-input:focus { border-color: var(--edm-green); outline: none; box-shadow: 0 0 8px rgba(57, 255, 20, 0.4); }
+
         @media (max-width: 640px) {
             h1 { font-size: 2.5rem; }
             .sequencer-container { padding: 15px; }
@@ -289,6 +309,7 @@
                     <button id="playBtn" class="btn">▶ PLAY</button>
                     <button id="stopBtn" class="btn">■ STOP</button>
                     <button id="clearBtn" class="btn btn-danger">CLEAR</button>
+                    <button id="settingsBtn" class="btn" title="MIDI Settings">⚙ SETTINGS</button>
                 </div>
                 
                 <div class="flex flex-wrap gap-6 items-center flex-grow justify-center sm:justify-end">
@@ -377,6 +398,25 @@
     
     <div class="description">
         Big Room / Electro / Festival
+    </div>
+
+    <!-- MIDI Settings Modal -->
+    <div id="midiSettingsModal" class="modal-overlay">
+        <div class="modal-content">
+            <h2 class="text-xl font-bold text-[#00f2ff] mb-4 text-center font-russo tracking-wide">MIDI MAPPING</h2>
+            <p class="text-xs text-gray-400 mb-4 text-center">Format: Note+Octave (e.g. C3, D#2)<br>Roland Standard (C4 = 60)</p>
+            
+            <div id="midi-settings-list" class="mb-4">
+                <!-- Dynamic input rows injected here -->
+            </div>
+            
+            <div id="settings-error" class="text-[#ff0055] text-xs text-center h-4 mb-4 font-russo uppercase"></div>
+
+            <div class="flex justify-end gap-2">
+                <button id="cancelSettingsBtn" class="btn btn-danger">CANCEL</button>
+                <button id="saveSettingsBtn" class="btn btn-purple">SAVE</button>
+            </div>
+        </div>
     </div>
 
     <script>
@@ -574,6 +614,86 @@
             new Array(STEPS).fill(false)  // Kick
         ];
 
+        // --- MIDI Mapping Setup ---
+        const TRACK_LABELS = ['Lead', 'Hat', 'Clap', 'Kick'];
+        // Default mapping: Lead(G4), Hat(F#2), Clap(D#2), Kick(C2) (Based on C4=60 standard)
+        let midiMapping = [67, 42, 39, 36]; 
+        const noteNames = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
+
+        function noteToName(noteIndex) {
+            if (noteIndex < 0 || noteIndex > 127) return "---";
+            const octave = Math.floor(noteIndex / 12) - 1;
+            const name = noteNames[noteIndex % 12];
+            return `${name}${octave}`;
+        }
+
+        function nameToNote(noteName) {
+            if (!noteName) return null;
+            const match = noteName.trim().match(/^([a-gA-G][#bB]?)(-?\d+)$/);
+            if (!match) return null;
+
+            let name = match[1].toUpperCase();
+            if (name.endsWith('B')) {
+                const flatMap = {"DB":"C#", "EB":"D#", "GB":"F#", "AB":"G#", "BB":"A#", "CB":"B", "FB":"E"};
+                name = flatMap[name] || name;
+            }
+
+            const octave = parseInt(match[2], 10);
+            const nameIdx = noteNames.indexOf(name);
+            if (nameIdx === -1) return null;
+
+            const note = (octave + 1) * 12 + nameIdx;
+            if (note < 0 || note > 127) return null;
+            return note;
+        }
+
+        function openSettings() {
+            const list = document.getElementById('midi-settings-list');
+            list.innerHTML = '';
+            
+            TRACK_LABELS.forEach((label, i) => {
+                const row = document.createElement('div');
+                row.className = 'flex justify-between items-center mb-3';
+                row.innerHTML = `
+                    <span class="text-sm font-bold text-gray-300 w-24 font-russo uppercase">${label}</span>
+                    <input type="text" id="midi-input-${i}" class="modal-input" value="${noteToName(midiMapping[i])}">
+                `;
+                list.appendChild(row);
+            });
+
+            document.getElementById('settings-error').innerText = '';
+            document.getElementById('midiSettingsModal').classList.add('active');
+        }
+
+        function saveSettings() {
+            let newMapping = [];
+            let hasError = false;
+            const errorEl = document.getElementById('settings-error');
+            errorEl.innerText = '';
+
+            for (let i = 0; i < 4; i++) {
+                const inputEl = document.getElementById(`midi-input-${i}`);
+                const val = inputEl.value;
+                const noteNum = nameToNote(val);
+                
+                if (noteNum === null) {
+                    hasError = true;
+                    inputEl.style.borderColor = 'var(--edm-pink)';
+                } else {
+                    inputEl.style.borderColor = '#444';
+                    newMapping.push(noteNum);
+                }
+            }
+
+            if (hasError) {
+                errorEl.innerText = 'INVALID FORMAT! USE C4, D#2 ETC.';
+            } else {
+                midiMapping = newMapping;
+                document.getElementById('midiSettingsModal').classList.remove('active');
+            }
+        }
+
+
         // --- MIDI Export Functions ---
         function exportMIDI() {
             const writeString = (view, offset, string) => {
@@ -599,13 +719,12 @@
             const stepTicks = 120;
             let events = [];
 
-            // Mapping: 3=Kick(36), 2=Clap(39), 1=Hat(42), 0=Lead(67: G4)
-            // Channel: Kick/Clap/Hat = Ch 10 (0x9), Lead = Ch 1 (0x0)
+            // Channel: Kick/Clap/Hat = Ch 10 (0x09), Lead = Ch 1 (0x00)
             const map = {
-                3: { note: 36, ch: 0x09 },
-                2: { note: 39, ch: 0x09 },
-                1: { note: 42, ch: 0x09 },
-                0: { note: 67, ch: 0x00 }
+                0: { note: midiMapping[0], ch: 0x00 }, // Lead
+                1: { note: midiMapping[1], ch: 0x09 }, // Hat
+                2: { note: midiMapping[2], ch: 0x09 }, // Clap
+                3: { note: midiMapping[3], ch: 0x09 }  // Kick
             };
 
             for (let step = 0; step < STEPS; step++) {
@@ -660,7 +779,7 @@
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = `edm_pattern_64_${Date.now()}.mid`;
+            a.download = `edm_pattern.mid`; // Changed to fixed file name
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
@@ -1106,6 +1225,13 @@
             document.getElementById('clearBtn').addEventListener('click', clearGrid);
             document.getElementById('exportBtn').addEventListener('click', exportMIDI);
             
+            // MIDI Settings Events
+            document.getElementById('settingsBtn').addEventListener('click', openSettings);
+            document.getElementById('cancelSettingsBtn').addEventListener('click', () => {
+                document.getElementById('midiSettingsModal').classList.remove('active');
+            });
+            document.getElementById('saveSettingsBtn').addEventListener('click', saveSettings);
+
             document.getElementById('bpmSlider').addEventListener('input', (e) => {
                 bpm = parseInt(e.target.value);
                 document.getElementById('bpmVal').innerText = bpm;
